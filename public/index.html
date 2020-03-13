@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Screen Light</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        background-color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="color">Pick Background Color</label>
+    <br />
+    <input type="color" id="color" />
+    <script>
+      (function() {
+        const colorPicker = document.getElementById("color");
+        const body = document.body;
+        let initColor;
+
+        try {
+          initColor = window.localStorage.getItem("color") || "#ffffff";
+        } catch (err) {
+          initColor = "#ffffff";
+        }
+
+        colorPicker.value = initColor;
+        body.style.backgroundColor = initColor;
+
+        colorPicker.addEventListener("change", evt => {
+          requestAnimationFrame(() => {
+            const val = evt.target.value;
+
+            try {
+              window.localStorage.setItem("color", val);
+            } catch (err) {}
+            body.style.backgroundColor = val;
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
