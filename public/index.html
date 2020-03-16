@@ -23,9 +23,12 @@
     <label for="color">Pick Background Color</label>
     <br />
     <input type="color" id="color" />
+    <br />
+    <button id="rave">Rave</button>
     <script>
       (function() {
         const colorPicker = document.getElementById("color");
+        const raveButton = document.getElementById("rave");
         const body = document.body;
         let initColor;
 
@@ -38,6 +41,90 @@
         colorPicker.value = initColor;
         body.style.backgroundColor = initColor;
 
+        function toHex(num) {
+          return num.toString(16).padStart(2, "0");
+        }
+
+        function* change(v) {
+          let value = v;
+
+          if (value === 0) {
+            value++;
+            while (value < 256) {
+              yield value;
+              value++;
+            }
+          } else {
+            value--;
+            while (value > -1) {
+              yield value;
+              value--;
+            }
+          }
+
+          return value;
+        }
+
+        function* colors() {
+          const s = {
+            r: 0,
+            g: 255,
+            b: 0
+          };
+
+          yield `#${toHex(s.r)}${toHex(s.g)}${toHex(s.b)}`;
+
+          let curr = "r";
+          let changer = change(s[curr]);
+
+          while (true) {
+            const c = changer.next();
+
+            if (c.done) {
+              if (curr === "r") {
+                curr = "g";
+              } else if (curr === "g") {
+                curr = "b";
+              } else if (curr === "b") {
+                curr = "r";
+              }
+
+              changer = change(s[curr]);
+              s[curr] = changer.next().value;
+            } else {
+              s[curr] = c.value;
+            }
+
+            yield `#${toHex(s.r)}${toHex(s.g)}${toHex(s.b)}`;
+          }
+        }
+
+        const div = document.getElementById("box");
+
+        function rave() {
+          let aid;
+
+          function go(c) {
+            aid = requestAnimationFrame(() => {
+              const { value, done } = c.next();
+              console.log(value);
+              body.style.backgroundColor = value;
+
+              if (!done) {
+                go(c);
+              }
+            });
+          }
+
+          go(colors());
+
+          return () => {
+            cancelAnimationFrame(aid);
+          };
+        }
+
+        let stop = null;
+
         colorPicker.addEventListener("change", evt => {
           requestAnimationFrame(() => {
             const val = evt.target.value;
@@ -47,6 +134,17 @@
             } catch (err) {}
             body.style.backgroundColor = val;
           });
+        });
+
+        raveButton.addEventListener("click", evt => {
+          if (stop) {
+            stop();
+            stop = null;
+            raveButton.innerHTML = "Rave";
+          } else {
+            stop = rave();
+            raveButton.innerHTML = "Stop";
+          }
         });
       })();
     </script>
